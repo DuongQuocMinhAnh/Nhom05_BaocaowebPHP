@@ -8,7 +8,6 @@ DROP TABLE IF EXISTS `order_items`;
 DROP TABLE IF EXISTS `orders`;
 DROP TABLE IF EXISTS `product_variants`;
 DROP TABLE IF EXISTS `products`;
-
 DROP TABLE IF EXISTS `users`;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -59,6 +58,8 @@ CREATE TABLE `orders` (
     `phone` VARCHAR(20) NOT NULL,
     `address` VARCHAR(255) NOT NULL,
     `total_amount` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    `payment_method` ENUM('COD', 'Banking', 'Momo', 'VNPAY') NOT NULL DEFAULT 'COD',
+    `payment_status` ENUM('Chưa thanh toán', 'Đã thanh toán') NOT NULL DEFAULT 'Chưa thanh toán',
     `status` ENUM('Chờ duyệt', 'Đang giao', 'Đã giao', 'Đã hủy') NOT NULL DEFAULT 'Chờ duyệt',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `fk_orders_user`
@@ -72,6 +73,9 @@ CREATE TABLE `order_items` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `order_id` INT NOT NULL,
     `variant_id` INT NULL,
+    `product_name` VARCHAR(255) NOT NULL,
+    `size` VARCHAR(50) NULL,
+    `color` VARCHAR(50) NULL,
     `quantity` INT NOT NULL DEFAULT 1,
     `price` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     CONSTRAINT `fk_order_items_order`
@@ -163,19 +167,19 @@ INSERT INTO `product_variants` (`id`, `product_id`, `size`, `color`, `stock_quan
 (27, 11, 'Mini', 'Kem', 0); 
 
 -- 4. Dữ liệu mẫu bảng ORDERS (Đủ các trạng thái theo yêu cầu: Chờ duyệt, Đang giao, Đã giao, Đã hủy)
-INSERT INTO `orders` (`id`, `user_id`, `customer_name`, `email`, `phone`, `address`, `total_amount`, `status`, `created_at`) VALUES
-(1, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 850000.00, 'Chờ duyệt', NOW()),
-(2, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 620000.00, 'Đang giao', NOW()),
-(3, 1, 'Khách Vãng Lai VIP', 'vip@gmail.com', '0933333333', 'Quận 1, TP. Hồ Chí Minh', 500000.00, 'Đã giao', NOW()),
-(4, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 180000.00, 'Đã hủy', NOW());
+INSERT INTO `orders` (`id`, `user_id`, `customer_name`, `email`, `phone`, `address`, `total_amount`, `payment_method`, `payment_status`, `status`, `created_at`) VALUES
+(1, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 850000.00, 'COD', 'Chưa thanh toán', 'Chờ duyệt', NOW()),
+(2, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 620000.00, 'Banking', 'Đã thanh toán', 'Đang giao', NOW()),
+(3, 1, 'Khách Vãng Lai VIP', 'vip@gmail.com', '0933333333', 'Quận 1, TP. Hồ Chí Minh', 500000.00, 'Momo', 'Đã thanh toán', 'Đã giao', NOW()),
+(4, 2, 'Nguyễn Văn Người Dùng', 'user@gmail.com', '0912345678', 'Số 123 Cầu Giấy, Hà Nội', 180000.00, 'COD', 'Chưa thanh toán', 'Đã hủy', NOW());
 
--- 5. Dữ liệu mẫu bảng ORDER_ITEMS (Chi tiết đơn hàng kèm giá tại thời điểm mua)
-INSERT INTO `order_items` (`id`, `order_id`, `variant_id`, `quantity`, `price`) VALUES
+-- 5. Dữ liệu mẫu bảng ORDER_ITEMS (Chi tiết đơn hàng kèm snapshot tên sản phẩm, size, màu và giá lúc mua)
+INSERT INTO `order_items` (`id`, `order_id`, `variant_id`, `product_name`, `size`, `color`, `quantity`, `price`) VALUES
 -- Đơn hàng 1: Mua 1 đôi Giày Oxford Đen size 39
-(1, 1, 1, 1, 850000.00),
+(1, 1, 1, 'Giày Tây Oxford Nam Classic', '39', 'Đen', 1, 850000.00),
 -- Đơn hàng 2: Mua 1 đôi Sneaker Trắng size 39
-(2, 2, 6, 1, 620000.00),
+(2, 2, 6, 'Giày Sneaker Thể Thao Streetwear', '39', 'Trắng', 1, 620000.00),
 -- Đơn hàng 3: Mua 2 chiếc Sandal quai đen size 39 (2 x 250.000 = 500.000)
-(3, 3, 16, 2, 250000.00),
+(3, 3, 16, 'Dép Sandal Chiến Binh Đi Học', '39', 'Đen', 2, 250000.00),
 -- Đơn hàng 4: Mua 1 đôi dép quai ngang (Đã hủy)
-(4, 4, 13, 1, 180000.00);
+(4, 4, 13, 'Dép Quai Ngang Unisex Basic', '39', 'Đen', 1, 180000.00);
